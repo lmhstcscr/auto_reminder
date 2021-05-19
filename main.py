@@ -248,10 +248,3 @@ def check_plan_date():
     return "当前排刀表更新时间为：{}".format(plan_data.get('update_date'))
 
 
-if __name__ == '__main__':
-    # update_plan()
-    #change_plan('453300604','C5','C3')
-    res1=check_boss('C2')
-    res2=describe_member('173587464')
-    print(res1)
-    print(res2)
