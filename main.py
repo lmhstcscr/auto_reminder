@@ -43,26 +43,26 @@ class MemberState:
             if plan_data.get(ii).get('QQ号') == str(self.member_id):
                 self.plan = [plan_data.get(ii).get('第一刀'), plan_data.get(ii).get('第二刀'), plan_data.get(ii).get('第三刀')]
         # 下面为临时该排刀留空间
-        with open(SCIPT_DIR+r'\\change.txt','r') as f:
-            command_lines=f.readlines()
-        start_date,end_date=_get_today_range()
+        with open(SCIPT_DIR + r'\\change.txt', 'r') as f:
+            command_lines = f.readlines()
+        start_date, end_date = _get_today_range()
         for ii in command_lines:
-            com_list=ii.split(' ')
-            if len(ii)<=2:
+            com_list = ii.split(' ')
+            if len(ii) <= 2:
                 continue
-            if str(com_list[2])==str(self.member_id):
-                if com_list[0]==CHANGE_PLAN_COM \
-                        and (datetime.datetime.fromtimestamp(float(com_list[1]))>=start_date
-                             and datetime.datetime.fromtimestamp(float(com_list[1]))<=end_date):#找到了对应id需要的变换排刀指令
-                    new_plan=[]
-                    is_changed=False
+            if str(com_list[2]) == str(self.member_id):
+                if com_list[0] == CHANGE_PLAN_COM \
+                        and (datetime.datetime.fromtimestamp(float(com_list[1])) >= start_date
+                             and datetime.datetime.fromtimestamp(float(com_list[1])) <= end_date):  # 找到了对应id需要的变换排刀指令
+                    new_plan = []
+                    is_changed = False
                     for jj in self.plan:
                         if jj == com_list[3] and not is_changed:
-                            new_plan.append(com_list[4]) #确定了就换
-                            is_changed=True
+                            new_plan.append(com_list[4])  # 确定了就换
+                            is_changed = True
                         else:
                             new_plan.append(jj)
-                    self.plan=new_plan
+                    self.plan = new_plan
             return
 
     def update_finished(self, finish_dict):
@@ -105,32 +105,32 @@ class MemberState:
                 else:  # 如果不是补偿刀
                     final_challenges.append(ii.get('boss_name'))
             self.finished = final_challenges
-        #根据指令进行调整
-        with open(SCIPT_DIR+r'\\change.txt','r') as f:
-            command_lines=f.readlines()
-        start_date,end_date=_get_today_range()
+        # 根据指令进行调整
+        with open(SCIPT_DIR + r'\\change.txt', 'r') as f:
+            command_lines = f.readlines()
+        start_date, end_date = _get_today_range()
         for ii in command_lines:
-            com_list=ii.split(' ')
-            if len(ii)<=2:
+            com_list = ii.split(' ')
+            if len(ii) <= 2:
                 continue
-            if str(com_list[2])==str(self.member_id):
-                if com_list[0]==CHANGE_FINISH_COM \
-                        and (datetime.datetime.fromtimestamp(float(com_list[1]))>=start_date
-                             and datetime.datetime.fromtimestamp(float(com_list[1]))<=end_date):#找到了对应id需要的变换排刀指令
-                    new_finish=[]
-                    is_changed=False
+            if str(com_list[2]) == str(self.member_id):
+                if com_list[0] == CHANGE_FINISH_COM \
+                        and (datetime.datetime.fromtimestamp(float(com_list[1])) >= start_date
+                             and datetime.datetime.fromtimestamp(float(com_list[1])) <= end_date):  # 找到了对应id需要的变换排刀指令
+                    new_finish = []
+                    is_changed = False
                     for jj in self.finished:
                         if jj == com_list[3] and not is_changed:
-                            new_finish.append(com_list[4]) #确定了就换
-                            is_changed=True
+                            new_finish.append(com_list[4])  # 确定了就换
+                            is_changed = True
                         else:
                             new_finish.append(jj)
-                    self.finished=new_finish
+                    self.finished = new_finish
         return
 
 
 def _get_today_range():
-    now_date=datetime.datetime.now().date()
+    now_date = datetime.datetime.now().date()
     now_start = datetime.datetime(now_date.year, now_date.month, now_date.day, 5, 0, 0)
     now_end = now_start + datetime.timedelta(days=1)
     return now_start, now_end
@@ -175,23 +175,23 @@ def load_plan():
     return plan_json
 
 
-def change_plan(member_id,bossname1,bossname2):
-    now_time=datetime.datetime.now()
-    now_time=now_time-datetime.timedelta(5)
-    now_time=now_time.timestamp()
-    change_str= "{} {} {} {} {}\n".format(CHANGE_PLAN_COM,now_time,member_id,bossname1,bossname2)
-    with open(SCIPT_DIR+r'\\change.txt','a') as f:
-        f.write(change_str)
-    return
-
-def change_finished(member_id,bossname1,bossname2):
+def change_plan(member_id, bossname1, bossname2):
     now_time = datetime.datetime.now()
     now_time = now_time - datetime.timedelta(5)
     now_time = now_time.timestamp()
-    change_str="{} {} {} {} {}\n".format(CHANGE_FINISH_COM,now_time,member_id,bossname1,bossname2)
-    with open(SCIPT_DIR+r'\\change.txt','a') as f:
+    change_str = "{} {} {} {} {}\n".format(CHANGE_PLAN_COM, now_time, member_id, bossname1, bossname2)
+    with open(SCIPT_DIR + r'\\change.txt', 'a') as f:
         f.write(change_str)
-    return
+    return change_str
+
+def change_finished(member_id, bossname1, bossname2):
+    now_time = datetime.datetime.now()
+    now_time = now_time - datetime.timedelta(5)
+    now_time = now_time.timestamp()
+    change_str = "{} {} {} {} {}\n".format(CHANGE_FINISH_COM, now_time, member_id, bossname1, bossname2)
+    with open(SCIPT_DIR + r'\\change.txt', 'a') as f:
+        f.write(change_str)
+    return "{}的{}改到{}完成！".format(member_id, bossname1, bossname2)
 
 
 def load_finished():
@@ -204,7 +204,8 @@ def load_finished():
 
 
 def check_boss(boss_name):
-    member_list=init_member()
+    #查王，返回字符串
+    member_list = init_member()
     boss_miss_name = []
     boss_miss_id = []
     for ii in member_list:
@@ -215,16 +216,27 @@ def check_boss(boss_name):
     member_str = ','.join(boss_miss_name)
     return msg + member_str
 
+def remind_boss(boss_name):
+    #查王，返回id列表，方便艾特
+    member_list = init_member()
+    boss_miss_name = []
+    boss_miss_id = []
+    for ii in member_list:
+        if ii.check_remind(boss_name):
+            boss_miss_name.append(ii.member_name)
+            boss_miss_id.append(ii.member_id)
+    return boss_miss_name,boss_miss_id
+
 def describe_member(member_id):
     member_list = init_member()
     for ii in member_list:
-        if str(ii.member_id)==str(member_id):
-            plan_set=set(ii.plan)
-            finished_set=set(ii.finished)
-            not_finished=list(plan_set-finished_set)
-            msg="{}的今日排刀是: {} \n".format(ii.member_name,' '.join(ii.plan))
-            msg=msg+"已经出的刀是：{} \n".format(' '.join(ii.finished))
-            msg=msg+"尚未出的刀是：{}".format(' '.join(not_finished))
+        if str(ii.member_id) == str(member_id):
+            plan_set = set(ii.plan)
+            finished_set = set(ii.finished)
+            not_finished = list(plan_set - finished_set)
+            msg = "{}的今日排刀是: {} \n".format(ii.member_name, ' '.join(ii.plan))
+            msg = msg + "已经出的刀是：{} \n".format(' '.join(ii.finished))
+            msg = msg + "尚未出的刀是：{}".format(' '.join(not_finished))
             return msg
 
 
@@ -246,5 +258,3 @@ def init_member():
 def check_plan_date():
     plan_data = load_plan()
     return "当前排刀表更新时间为：{}".format(plan_data.get('update_date'))
-
-
