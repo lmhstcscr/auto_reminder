@@ -3,12 +3,13 @@ import requests
 import os
 import json
 import datetime
+import copy
 
 YOBOT_API = ""
-PLAN_MODE = 1  # 1表示本地文档同步  2表示腾讯文档API同步
+PLAN_MODE = 1  # 1表示本地文档同步  2表示腾讯文档API同步（待大佬开发）
 SCIPT_DIR = os.path.split(os.path.realpath(__file__))[0]
 LOCAL_PLAN_PATH = SCIPT_DIR + r"\plan.xlsx"
-GROUP_ID = '417488094'
+GROUP_ID = ''
 CHANGE_PLAN_COM = 'CHANGE_PLAN'
 CHANGE_FINISH_COM = 'CHANGE_FINISHED'
 
@@ -42,7 +43,7 @@ class MemberState:
         for ii in plan_data.keys():
             if plan_data.get(ii).get('QQ号') == str(self.member_id):
                 self.plan = [plan_data.get(ii).get('第一刀'), plan_data.get(ii).get('第二刀'), plan_data.get(ii).get('第三刀')]
-        # 下面为临时该排刀留空间
+        # 下面为临时改排刀留空间
         with open(SCIPT_DIR + r'\\change.txt', 'r') as f:
             command_lines = f.readlines()
         start_date, end_date = _get_today_range()
@@ -63,7 +64,7 @@ class MemberState:
                         else:
                             new_plan.append(jj)
                     self.plan = new_plan
-            return
+        return
 
     def update_finished(self, finish_dict):
         challenges = finish_dict.get('challenges')
@@ -154,7 +155,7 @@ def _yoboss2myboss(cycle, bossnum):
 
 def update_plan():
     if PLAN_MODE == 1:
-        plan_df = pd.read_excel(LOCAL_PLAN_PATH, sheet_name='报名统计', usecols='A:F', skiprows=[0], data_only=True)
+        plan_df = pd.read_excel(LOCAL_PLAN_PATH, sheet_name='报名统计', usecols='A:F', skiprows=[0])
         plan_df.dropna(how='all', inplace=True)
         plan_df['QQ号'] = plan_df['QQ号'].apply(lambda x: str(int(x)))
 
@@ -177,16 +178,14 @@ def load_plan():
 
 def change_plan(member_id, bossname1, bossname2):
     now_time = datetime.datetime.now()
-    now_time = now_time - datetime.timedelta(5)
     now_time = now_time.timestamp()
-    change_str = "{} {} {} {} {}\n".format(CHANGE_PLAN_COM, now_time, member_id, bossname1, bossname2)
+    change_str = "{} {} {} {} {} \n".format(CHANGE_PLAN_COM, now_time, member_id, bossname1, bossname2)
     with open(SCIPT_DIR + r'\\change.txt', 'a') as f:
         f.write(change_str)
     return change_str
 
 def change_finished(member_id, bossname1, bossname2):
     now_time = datetime.datetime.now()
-    now_time = now_time - datetime.timedelta(5)
     now_time = now_time.timestamp()
     change_str = "{} {} {} {} {}\n".format(CHANGE_FINISH_COM, now_time, member_id, bossname1, bossname2)
     with open(SCIPT_DIR + r'\\change.txt', 'a') as f:
@@ -231,9 +230,10 @@ def describe_member(member_id):
     member_list = init_member()
     for ii in member_list:
         if str(ii.member_id) == str(member_id):
-            plan_set = set(ii.plan)
-            finished_set = set(ii.finished)
-            not_finished = list(plan_set - finished_set)
+            not_finished=copy.copy(ii.plan)
+            for jj in ii.finished:
+                if jj in not_finished:
+                    not_finished.remove(jj)
             msg = "{}的今日排刀是: {} \n".format(ii.member_name, ' '.join(ii.plan))
             msg = msg + "已经出的刀是：{} \n".format(' '.join(ii.finished))
             msg = msg + "尚未出的刀是：{}".format(' '.join(not_finished))
@@ -258,3 +258,6 @@ def init_member():
 def check_plan_date():
     plan_data = load_plan()
     return "当前排刀表更新时间为：{}".format(plan_data.get('update_date'))
+
+if __name__=='__main__':
+    init_member()
